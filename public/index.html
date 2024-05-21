@@ -1,1 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>價格查詢</title>
+  <style>
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    table, th, td {
+      border: 1px solid black;
+    }
+    th, td {
+      padding: 8px;
+      text-align: left;
+    }
+  </style>
+</head>
+<body>
+<h1></h1>
+<form id="search-form">
+  <label for="date">輸入年月份:</label>
+  <input type="text" id="date" name="date" placeholder="113/01">
+  <button type="submit">查詢</button>
+</form>
+<h2>每月趨勢</h2>
+<table>
+  <thead>
+  <tr>
+    <th>日期</th>
+    <th>平均價</th>
+    <th>成交量</th>
+  </tr>
+  </thead>
+  <tbody id="products-table-body">
+  </tbody>
+</table>
 
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // 顯示歷年價格
+    fetch('/api/price')
+            .then(response => response.json())
+            .then(data => {
+              const tableBody = document.getElementById('products-table-body');
+              data.products.forEach(product => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                            <td>${product.date}</td>
+                            <td>${product.price}</td>
+                            <td>${product.volume}</td>
+                        `;
+                tableBody.appendChild(row);
+              });
+            });
+
+    // 用年月份查詢
+    document.getElementById('search-form').addEventListener('submit', function(event) {
+      event.preventDefault();
+      const date = document.getElementById('date').value;
+      fetch(`/api/price?search=${date}`)
+              .then(response => response.json())
+              .then(data => {
+                const tableBody = document.getElementById('products-table-body');
+                tableBody.innerHTML = '';
+                data.products.forEach(product => {
+                  const row = document.createElement('tr');
+                  row.innerHTML = `
+                                <td>${product.date}</td>
+                                <td>${product.price}</td>
+                                <td>${product.volume}</td>
+                            `;
+                  tableBody.appendChild(row);
+                });
+              });
+    });
+  });
+</script>
+</body>
+</html>
